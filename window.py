@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Sun Oct 27 04:51:34 2013
+# Created: Sun Oct 27 05:30:55 2013
 #      by: pyside-uic 0.2.14 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,11 +12,11 @@ from PySide import QtCore, QtGui
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(398, 452)
+        MainWindow.resize(398, 591)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.SettingsGroup = QtGui.QGroupBox(self.centralwidget)
         self.SettingsGroup.setMinimumSize(QtCore.QSize(300, 0))
         self.SettingsGroup.setMaximumSize(QtCore.QSize(300, 16777215))
@@ -133,6 +133,12 @@ class Ui_MainWindow(object):
         self.frame_task4.setObjectName("frame_task4")
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.frame_task4)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.verticalLayout_7 = QtGui.QVBoxLayout()
+        self.verticalLayout_7.setObjectName("verticalLayout_7")
+        self.ghostWidget = QtGui.QWidget(self.frame_task4)
+        self.ghostWidget.setMinimumSize(QtCore.QSize(0, 200))
+        self.ghostWidget.setObjectName("ghostWidget")
+        self.verticalLayout_7.addWidget(self.ghostWidget)
         self.horizontalLayout_10 = QtGui.QHBoxLayout()
         self.horizontalLayout_10.setContentsMargins(0, 0, -1, -1)
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
@@ -142,7 +148,8 @@ class Ui_MainWindow(object):
         self.removeRuleButton = QtGui.QPushButton(self.frame_task4)
         self.removeRuleButton.setObjectName("removeRuleButton")
         self.horizontalLayout_10.addWidget(self.removeRuleButton)
-        self.verticalLayout_5.addLayout(self.horizontalLayout_10)
+        self.verticalLayout_7.addLayout(self.horizontalLayout_10)
+        self.verticalLayout_5.addLayout(self.verticalLayout_7)
         self.horizontalLayout_8 = QtGui.QHBoxLayout()
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
         self.alalal = QtGui.QLabel(self.frame_task4)
@@ -183,10 +190,10 @@ class Ui_MainWindow(object):
         self.paintButton = QtGui.QPushButton(self.SettingsGroup)
         self.paintButton.setObjectName("paintButton")
         self.verticalLayout.addWidget(self.paintButton)
-        self.horizontalLayout_2.addWidget(self.SettingsGroup)
+        self.horizontalLayout.addWidget(self.SettingsGroup)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 398, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 398, 27))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
