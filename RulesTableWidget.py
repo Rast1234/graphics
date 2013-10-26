@@ -5,40 +5,40 @@ __author__ = 'actics'
 from PySide.QtGui import *
 
 from QTableWidgetDragRow import *
-from delegators import CellDelegate
+from delegators import SpeedDelegate
 
 
-class TupleTableWidget(QTableWidgetDragRow):
+class RulesTableWidget(QTableWidgetDragRow):
     """Table widget class with methods to input / output
     rules in list format and validate input fields
     """
 
-    def __init__(self, parent=None, minValue=0, maxValue=1000, defaultValue=0):
+    def __init__(self, parent=None):
         """Initial rules table. Set 2 columns, headers and delegates
         """
-        super(TupleTableWidget, self).__init__(parent)
+        super(RulesTableWidget, self).__init__(parent)
 
         self.setColumnCount(2)
-        self.setItemDelegateForColumn(0, CellDelegate(self, minValue, maxValue, defaultValue))
-        self.setItemDelegateForColumn(1, CellDelegate(self, minValue, maxValue, defaultValue))
+        self.setItemDelegateForColumn(0, SpeedDelegate(self))
+        self.setItemDelegateForColumn(1, SpeedDelegate(self))
 
         self.setHorizontalHeaderLabels((u"x", u"y"))
         self.horizontalHeader().setResizeMode(QHeaderView.Stretch)
 
-    def addRow(self, xName, yName):
+    def addRule(self, x, y):
         """Add row to rules table
         """
         row = self.rowCount()
         self.insertRow(row)
 
-        x = QTableWidgetItem()
-        y = QTableWidgetItem()
+        timeItem = QTableWidgetItem()
+        speedItem = QTableWidgetItem()
 
-        x.setText(xName)
-        y.setText(yName)
+        timeItem.setText(x)
+        speedItem.setText(y)
 
-        self.setItem(row, 0, x)
-        self.setItem(row, 1, y)
+        self.setItem(row, 0, timeItem)
+        self.setItem(row, 1, speedItem)
 
         ranges = self.selectedRanges()
         if len(ranges):
@@ -48,7 +48,7 @@ class TupleTableWidget(QTableWidgetDragRow):
         ran = QTableWidgetSelectionRange(row, 0, row, 1)
         self.setRangeSelected(ran, True)
 
-    def delRow(self):
+    def removeRule(self):
         """Remove selected row from rules table, then move
         focus to next row (or last row if last was removed)
         """
@@ -68,36 +68,38 @@ class TupleTableWidget(QTableWidgetDragRow):
         ran = QTableWidgetSelectionRange(removed_row, 0, removed_row, 1)
         self.setRangeSelected(ran, True)
 
-    def fromList(self, rules_list):
-        """Generate rows from list of rows as tuples
+    def fromRulesList(self, rules_list):
+        """Generate rows from rule list
+        rule in list it's tuple with time(int seconds) and speed(float)
         """
         self.setRowCount(0)
         # not needed because headers are not removed:
+        #self.setHorizontalHeaderLabels((u"Время", u"Скорость"))
 
         for x, y in rules_list:
             a = "{d}".format(x)
             b = "{d}".format(y)
 
-            self.addRow(a, b)
+            self.addRule(a, b)
 
-    def toList(self):
-        """Save rows as tuples
-        Return list of tuples
+    def toRulesList(self):
+        """Generate rule list from rules in table rows
+        rule in list it's tuple with time(int seconds) and speed(float)
         """
         rules = []
         for row_number in xrange( self.rowCount() ):
             #print row_number
 
-            xItem = self.item(row_number, 0)
-            x = xItem.text()
+            time_item = self.item(row_number, 0)
+            time = time_item.text()
 
-            yItem = self.item(row_number, 1)
-            y = yItem.text()
+            speed_item = self.item(row_number, 1)
+            speed = speed_item.text()
 
-            x = int(x[:-1])
-            y = int(y[:-1])
+            time = int(time[:-1])
+            speed = int(speed[:-1])
 
 
-            rules.append((x, y))
+            rules.append((time, speed))
 
         return rules

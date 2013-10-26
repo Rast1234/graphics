@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 __author__ = 'rast'
@@ -8,7 +8,7 @@ from PySide.QtGui import *
 import signal
 import sys
 from math import *
-from TupleTableWidget import TupleTableWidget
+from RulesTableWidget import RulesTableWidget
 from window import *
 
 global hx
@@ -55,7 +55,6 @@ class Canvas(QWidget):
         self.data = []
 
     def paintEvent(self, e):  # all painting here
-        print("paint")
         qp = QtGui.QPainter()
         qp.begin(self)
 
@@ -215,11 +214,11 @@ class ControlMainWindow(QMainWindow):
         self.ui.centralwidget.layout().insertWidget(1, self.canvas)
         self.ui.paintButton.clicked.connect(self.paintClick)
 
-        self.rulesTable = TupleTableWidget(self.ui.SettingsGroup)
-        self.ui.frame_task4.layout().insertWidget(0,self.rulesTable)
+        self.rulesTable = RulesTableWidget(self.ui.SettingsGroup)
+        #self.ui.frame_task4.layout().insertWidget(0,self.rulesTable)
 
-        add_rule_callback = lambda: self.rulesTable.addRow("0", "0")
-        remove_rule_callback = lambda: self.rulesTable.delRow()
+        add_rule_callback = lambda: self.rulesTable.addRule("0", "0")
+        remove_rule_callback = lambda: self.rulesTable.removeRule()
         self.ui.addRuleButton.clicked.connect(add_rule_callback)
         self.ui.removeRuleButton.clicked.connect(remove_rule_callback)
 
