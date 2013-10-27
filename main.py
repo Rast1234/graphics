@@ -7,6 +7,8 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 import signal
 import sys
+import random
+import time
 from math import *
 from TupleTableWidget import TupleTableWidget
 from window import *
@@ -29,7 +31,26 @@ testPoly = [
     (380, 340),
     (409, 178),
 ]
-testRect = [202, 113, 338, 291]
+testRect = [202, 113, 338, 291]  # x1, y1, x2, y2
+colors = None
+
+def iterColor():
+    colorSet = [
+        (255, 0, 0),
+        (0, 255, 0),
+        (0, 0, 255),
+        (255, 255, 0),
+        (255, 0, 255),
+        (0, 255, 255),
+        (255, 255, 255),
+        (0, 0, 0),
+    ]
+    for x in colorSet:
+        yield qRgb(*x)
+
+def randomColor():
+    [r,g,b] = [random.randint(0,255/3)*3 for _ in range(3)]
+    return qRgb(r, g, b)
 
 def sign(x):
     if x == 0:
@@ -48,6 +69,81 @@ def f(x, a, b):
         return None
     return int(sqrt(tmp)/a)
 
+def segmentIntersection(seg1, seg2):
+    """
+    seg1 = ( (x1, y1), (x2, y2) )
+    seg2 = ( (x3, y3), (x4, y5) )
+    returns False or (x, y) - intersection point
+    """
+    (p1, p2) = seg1
+    (p3, p4) = seg2
+    [p1, p2 ,p3, p4] = [Point(float(x), float(y)) for (x,y) in [p1, p2, p3, p4]]
+
+    if max(p1.x, p2.x) < min(p3.x, p4.x):
+        return False  # no mutual X intervals
+
+    try:
+        [a1, a2] = [(A.y-B.y)/(A.x-B.x) for (A,B) in [(p1, p2), (p3, p4)]]
+    except ZeroDivisionError:
+        #print("Zero division with segments {0} :: {1}".format(seg1, seg2))
+        # this means that some Xs are equals
+        return None
+    [b1, b2] = [A.y-a*A.x for (A,a) in [(p1,a1), (p3,a2)]]
+
+    if a1 == a2:
+        return False  # parallel segments
+
+    x = (b2 - b1)/(a1 - a2)
+    y = a1*x + b1
+
+    if x < max(min(p1.x, p2.x), min(p3.x, p4.x)) or \
+            x > min(max(p1.x, p2.x), max(p3.x, p4.x)):
+        return False
+
+    return x,y
+
+class Queue(object):
+    """
+    Drawing queue
+    """
+
+    def __init__(self, data):
+        """
+        Initialize queue with segments
+        """
+        self.data = data
+        self.pos = 0
+        self.force = False
+        self.baseColor = qRgb(0, 0, 0)
+        self.updateColor = qRgb(255, 0, 0)
+
+    def draw(self, canvas):
+        for i, (p,(p1,p2),(p3,p4)) in enumerate(self.data[:self.pos]):
+            last = i == self.pos-1
+            #print("i={}, pos={}, last={}".format(i,self.pos, last))
+            color = self.updateColor if last else self.baseColor
+            if last:
+                print("{0} for {1}, {2} :: {3}, {4}".format(p,p1,p2,p3,p4))
+
+            self.__do_draw(canvas, p, p1, p2, p3, p4, color)
+
+    def __do_draw(self, canvas, p, p1, p2, p3, p4, color):
+        #print(">    ",p,p1,p2,p3,p4)
+        canvas.drawLine(p1,p2, color)
+        canvas.drawLine(p3,p4, color)
+        if p:
+            canvas.drawCircle(p)
+            pass
+
+    def next(self):
+        self.pos += 1
+
+    def isDone(self):
+        return self.pos >= len(self.data)
+
+
+queue = Queue([])
+
 class Point(object):
     def __init__(self, x, y):
         self.x = x
@@ -55,6 +151,7 @@ class Point(object):
 
     def __str__(self):
         return "(%d, %d)" %(self.x, self.y)
+
 
 class Canvas(QWidget):
     """A canvas with support of simple
@@ -76,7 +173,14 @@ class Canvas(QWidget):
         # reinitialize image (size may change during work)
         self.image = QImage(self.size(), QImage.Format_RGB888)
         self.drawClear()
-        if self.task is not None:
+
+        #dirty
+        global queue
+        #print queue.data, queue.isDone()
+        if not queue.isDone() or queue.force:
+            queue.draw(self)
+            #=queue.next()
+        elif self.task is not None:
             self.task()  # do useful stuff
 
         qp.drawImage(0, 0, self.image)
@@ -102,9 +206,11 @@ class Canvas(QWidget):
         if 0< x< width-1 and 0< y < height-1:
             self.image.setPixel(x, y, color)
 
-    def drawLine(self, point1, point2, color):
+    def drawLine(self, point1, point2, color=None):
         """Bresenham algorithm for drawing lines
         """
+        if color is None:
+            color = randomColor()
         size = self.size()
         (width, height) = (size.width(), size.height())
         p1 = Point(point1[0], point1[1])
@@ -152,6 +258,24 @@ class Canvas(QWidget):
             else:
                 x += pdx
                 y += pdy
+            self.setPixel(x, y, color)
+
+    def drawCircle(self, centerPoint, color=None):
+        """
+        Draws (bad) circle
+        """
+        if color is None:
+            color = randomColor()
+        x = centerPoint[0]
+        y = centerPoint[1]
+        points = [
+            (x,y),
+            (x+1,y+1),
+            (x+1,y-1),
+            (x-1,y+1),
+            (x-1,y-1),
+        ]
+        for x,y in points:
             self.setPixel(x, y, color)
 
     def task3(self):
@@ -213,22 +337,74 @@ class Canvas(QWidget):
             self.setPixel(dx - xhd2, dy - yhd2, color)
             self.setPixel(dx + xhd2, dy + yhd2, color)
 
-    def drawPoly(self, points, color):
-        if points[0] != points[-1]:
-            points.append(points[0])
-        for i, _ in enumerate(points[:-1]):
-            self.drawLine(points[i], points[i+1], color)
-
     def task4(self):
         """Task 4 wrapper
         """
+        global colors
+        colors = iterColor()  # re-seed colors for repainting
+
         data = map(lambda x: int(x.value()), self.data[1])
-        poly = self.data[0]
-        polyColor = qRgb(0, 0, 255)
-        rectColor = qRgb(0, 255, 0)
-        self.drawPoly(poly, polyColor)
-        rect = [(data[0], data[1]),(data[2], data[1]),(data[2], data[3]),(data[0], data[3])]
-        self.drawPoly(rect, rectColor)
+        polyData = self.data[0]
+        poly = Poly(polyData, self)
+        poly.draw()
+
+        rectData = [(data[0], data[1]),(data[2], data[1]),(data[2], data[3]),(data[0], data[3])]
+        rect = Poly(rectData, self)
+        rect.draw()
+
+        print("="*60)
+        poly.extendWithIntersectionPoints(rect)
+
+
+class Poly(object):
+    """
+    Polygone with operations
+    """
+
+    def __init__(self, points, canvas, color=None):
+        self.points = points
+        self.canvas = canvas
+
+        self.color = color if color is not None else colors.next()
+
+        #normalize
+        if self.points[0] != self.points[-1]:
+            self.points.append(self.points[0])
+
+    def iterSegments(self):
+        """
+        Iterate over self segments
+        Segment is ((x1, y1), (x2, y2))
+        """
+        for i, _ in enumerate(self.points[:-1]):
+            yield self.points[i], self.points[i+1]
+
+    def draw(self):
+        """
+        Draw self on canvas, given in constructor
+        """
+        for a, b in self.iterSegments():
+            self.canvas.drawLine(a, b, self.color)
+
+    def extendWithIntersectionPoints(self, otherPoly):
+        """
+        Return current points list,
+        extended with intersection points
+        """
+        result = []
+        for seg in self.iterSegments():
+            for otherSeg in otherPoly.iterSegments():
+                intersection = segmentIntersection(seg, otherSeg)
+
+                #self.canvas.drawLine(seg[0], seg[1])
+                #self.canvas.drawLine(otherSeg[0], otherSeg[1])
+                # pause
+                result.append((intersection, seg, otherSeg))
+                #print("{0} :: {1} :: {2}".format(intersection, seg, otherSeg))
+        global queue
+        queue = Queue(result)
+
+
 
 
 class ControlMainWindow(QMainWindow):
@@ -289,6 +465,8 @@ class ControlMainWindow(QMainWindow):
         for x in xrange(3):
             if self.radios[x].isChecked():
                 self.tasks[x]()
+        global queue
+        queue.force = False
         self.canvas.repaint()
 
     def radioClick(self):
@@ -306,6 +484,12 @@ class ControlMainWindow(QMainWindow):
         key = event.key()
         if key == QtCore.Qt.Key_Escape:
             self.close()
+        elif key == QtCore.Qt.Key_Equal:
+            global queue
+            if queue is not None and not queue.isDone():
+                queue.next()
+                queue.force = True
+                self.canvas.repaint()
 
     def mousePressEvent(self, event):
         """Make window draggable
@@ -345,6 +529,7 @@ class ControlMainWindow(QMainWindow):
         self.canvas.task = self.canvas.task4
         self.canvas.data = (self.pointsTable.toList(), inputs)
 
+
 def main():
     """Program enter
     """
@@ -352,6 +537,8 @@ def main():
     # Ctrl+C in linux terminal
     if sys.platform == "linux2":
         signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    random.seed(42)
 
     app = QApplication(sys.argv)
     mySW = ControlMainWindow()
