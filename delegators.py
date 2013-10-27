@@ -30,7 +30,6 @@ class CellDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         value = index.model().data(index, Qt.EditRole)
-        value = value[:-1]
         try:
             editor.setValue(int(value))
         except ValueError:  # empty value arrives

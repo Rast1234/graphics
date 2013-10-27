@@ -8,6 +8,7 @@ from PySide.QtGui import *
 import signal
 import sys
 import random
+from pprint import pprint
 from math import *
 from TupleTableWidget import TupleTableWidget
 from Clipping import *
@@ -83,7 +84,7 @@ class Canvas(QWidget):
         self.drawClear()
 
         #dirty
-        print GlobalQueue.queue.data, GlobalQueue.queue.isDone()
+        #print GlobalQueue.queue.data, GlobalQueue.queue.isDone()
         if not GlobalQueue.queue.isDone() or GlobalQueue.queue.force:
             GlobalQueue.queue.draw(self)
             #=queue.next()
@@ -263,21 +264,23 @@ class Canvas(QWidget):
         """
         data = map(lambda x: int(x.value()), self.data[1])
         polyData = self.data[0]
-        poly = Poly(polyData)
+        poly = Poly(points=polyData)
         poly.draw(self.drawLine)
 
         rectData = [(data[0], data[1]),(data[2], data[1]),(data[2], data[3]),(data[0], data[3])]
-        rect = Poly(rectData)
+        rect = Poly(points=rectData)
         rect.draw(self.drawLine)
 
         print("="*60)
-        #newPolyData = poly.extendWithIntersectionPoints(rect)
-        #poly = Poly(newPolyData, poly.color)
-        newRectData = rect.extendWithIntersectionPoints(poly)
-        rect = Poly(newRectData, rect.color)
+        newPolyData, polyKinds = poly.extendWithIntersectionPoints(rect)
+        newPoly = Poly(points=newPolyData, kinds=polyKinds, color=poly.color)
+        newRectData, rectKinds = rect.extendWithIntersectionPoints(poly)
+        newRect = Poly(points=newRectData, kinds=rectKinds, color=rect.color)
 
-        poly.drawPoints(self.drawCross)
-        rect.drawPoints(self.drawSquare)
+        newPoly.drawPoints(self.drawCross)
+        pprint(newPoly.points)
+        newRect.drawPoints(self.drawSquare)
+        pprint(newRect.points)
 
 
 

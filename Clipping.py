@@ -19,13 +19,19 @@ testPoly = [
 ]
 testRect = [202, 113, 338, 291]  # x1, y1, x2, y2
 
+class Kind(object):
+    neutral = 'neutral'
+    incoming = 'incoming'
+    outgoing = 'outgoing'
+
 class Poly(object):
     """
     Polygone with operations
     """
 
-    def __init__(self, points, color=None):
-        self.points = points
+    def __init__(self, points=[], kinds=[], color=None):
+        kinds = kinds if len(kinds) == len(points) else [Kind.neutral]*len(points)
+        self.points = zip(points, kinds)
 
         if color is None:
             self.color = randomColor()
@@ -42,7 +48,7 @@ class Poly(object):
         Segment is ((x1, y1), (x2, y2))
         """
         for i, _ in enumerate(self.points[:-1]):
-            yield self.points[i], self.points[i+1]
+            yield self.points[i][0], self.points[i+1][0]
 
     def draw(self, drawingFunc):
         """
@@ -58,23 +64,31 @@ class Poly(object):
         """
         debugResult = []
         result = []
+        kinds = []
+        first = True
         for seg in self.iterSegments():
+            if first:
+                result.append(seg[0])
+                kinds.append(Kind.neutral)
+                first = False
             for otherSeg in otherPoly.iterSegments():
                 intersection, info = segmentIntersection(seg, otherSeg)
-                result.append(seg[0])
                 if intersection:
                     result.append(intersection)
-                    print("{} : {}  x  {}".format(info['sign'], seg, otherSeg))
-                result.append(seg[1])
+                    kind = Kind.incoming if info['sign'] < 0 else Kind.outgoing
+                    kinds.append(kind)
+                    #print("{} : {}  x  {}".format(info['sign'], seg, otherSeg))
                 #this is for debugging
                 debugResult.append((intersection, seg, otherSeg))
                 #print("{0} :: {1} :: {2}".format(intersection, seg, otherSeg))
-        GlobalQueue.queue = GlobalQueue.Queue(debugResult)
-        return result
+            result.append(seg[1])
+            kinds.append(Kind.neutral)
+        #GlobalQueue.queue = GlobalQueue.Queue(debugResult)
+        return result, kinds
 
     def drawPoints(self, drawingFunc):
         """
         Draw points using callback
         """
-        for p in self.points:
+        for p, _ in self.points:
             drawingFunc(p, color=self.color)
