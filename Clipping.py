@@ -90,5 +90,5 @@ class Poly(object):
         """
         Draw points using callback
         """
-        for p, _ in self.points:
-            drawingFunc(p, color=self.color)
+        for point, kind in self.points:
+            drawingFunc(point, kind=kind, color=self.color)

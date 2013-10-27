@@ -168,7 +168,7 @@ class Canvas(QWidget):
                 y += pdy
             self.setPixel(x, y, color)
 
-    def drawCross(self, centerPoint, length=3, color=None):
+    def drawCross(self, centerPoint, kind=None, length=3, color=None):
         """
         Draws (bad) circle
         """
@@ -183,7 +183,10 @@ class Canvas(QWidget):
         for (p1, p2) in segments:
             self.drawLine(p1, p2, color)
 
-    def drawSquare(self, centerPoint, size=3, color=None):
+        if kind is not None:
+            self.__drawKind(x+3, y-5, kind, color)
+
+    def drawSquare(self, centerPoint, kind=None, size=3, color=None):
         """
         Draws square from center
         """
@@ -199,6 +202,39 @@ class Canvas(QWidget):
         ]
         for (p1, p2) in segments:
             self.drawLine(p1, p2, color)
+
+        self.__drawKind(x+3, y+5, kind, color)
+
+    def __drawKind(self, x, y, kind, color):
+            """
+            Draws symbolic kkind representation
+            """
+            segments = []
+            if kind == Kind.neutral:  # N
+                segments = [
+                    ( (x-2,y+3), (x-2,y-3) ),
+                    ( (x-2,y-3), (x+2,y+3) ),
+                    ( (x+2,y+3), (x+2,y-3) ),
+                        ]
+            elif kind == Kind.incoming:  # I
+                segments = [
+                    ( (x-2,y+3), (x+2,y+3) ),
+                    ( (x-2,y-3), (x+2,y-3) ),
+                    ( (x,y-3), (x,y+3) ),
+                        ]
+            elif kind == Kind.outgoing:  # O
+                segments = [
+                    ( (x-1,y+3), (x+1,y+3) ),
+                    ( (x+1,y+3), (x+2,y+1) ),
+                    ( (x+2,y+1), (x+2,y-1) ),
+                    ( (x+2,y-1), (x+1,y-3) ),
+                    ( (x+1,y-3), (x-1,y-3) ),
+                    ( (x-1,y-3), (x-2,y-1) ),
+                    ( (x-2,y-1), (x-2,y+1) ),
+                    ( (x-2,y+1), (x-1,y-3) ),
+                        ]
+            for (p1, p2) in segments:
+                self.drawLine(p1, p2, color)
 
     def task3(self):
         """Task 3 wrapper
