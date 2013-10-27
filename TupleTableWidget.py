@@ -75,8 +75,8 @@ class TupleTableWidget(QTableWidgetDragRow):
         # not needed because headers are not removed:
 
         for x, y in rules_list:
-            a = "{d}".format(x)
-            b = "{d}".format(y)
+            a = "{}".format(x)
+            b = "{}".format(y)
 
             self.addRow(a, b)
 
@@ -94,9 +94,8 @@ class TupleTableWidget(QTableWidgetDragRow):
             yItem = self.item(row_number, 1)
             y = yItem.text()
 
-            x = int(x[:-1])
-            y = int(y[:-1])
-
+            x = int(x)
+            y = int(y)
 
             rules.append((x, y))
 

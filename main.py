@@ -16,6 +16,21 @@ global hy
 hx = None
 hy = None
 
+testPoly = [
+    (168, 190),
+    (221, 120),
+    (415, 128),
+    (454, 227),
+    (364, 470),
+    (171, 419),
+    (216, 300),
+    (322, 284),
+    (310, 338),
+    (380, 340),
+    (409, 178),
+]
+testRect = [202, 113, 338, 291]
+
 def sign(x):
     if x == 0:
         return 0
@@ -198,6 +213,24 @@ class Canvas(QWidget):
             self.setPixel(dx - xhd2, dy - yhd2, color)
             self.setPixel(dx + xhd2, dy + yhd2, color)
 
+    def drawPoly(self, points, color):
+        if points[0] != points[-1]:
+            points.append(points[0])
+        for i, _ in enumerate(points[:-1]):
+            self.drawLine(points[i], points[i+1], color)
+
+    def task4(self):
+        """Task 4 wrapper
+        """
+        data = map(lambda x: int(x.value()), self.data[1])
+        poly = self.data[0]
+        polyColor = qRgb(0, 0, 255)
+        rectColor = qRgb(0, 255, 0)
+        self.drawPoly(poly, polyColor)
+        rect = [(data[0], data[1]),(data[2], data[1]),(data[2], data[3]),(data[0], data[3])]
+        self.drawPoly(rect, rectColor)
+
+
 class ControlMainWindow(QMainWindow):
     """A main window class
     """
@@ -214,11 +247,17 @@ class ControlMainWindow(QMainWindow):
         self.ui.centralwidget.layout().insertWidget(1, self.canvas)
         self.ui.paintButton.clicked.connect(self.paintClick)
 
-        self.rulesTable = TupleTableWidget(self.ui.ghostWidget)
+        self.pointsTable = TupleTableWidget(self.ui.ghostWidget)
 
+        #set up test data
+        self.pointsTable.fromList(testPoly)
+        self.ui.task4_x1.setValue(testRect[0])
+        self.ui.task4_y1.setValue(testRect[1])
+        self.ui.task4_x2.setValue(testRect[2])
+        self.ui.task4_y2.setValue(testRect[3])
 
-        add_rule_callback = lambda: self.rulesTable.addRow("0", "0")
-        remove_rule_callback = lambda: self.rulesTable.delRow()
+        add_rule_callback = lambda: self.pointsTable.addRow("0", "0")
+        remove_rule_callback = lambda: self.pointsTable.delRow()
         self.ui.addRuleButton.clicked.connect(add_rule_callback)
         self.ui.removeRuleButton.clicked.connect(remove_rule_callback)
 
@@ -251,7 +290,6 @@ class ControlMainWindow(QMainWindow):
             if self.radios[x].isChecked():
                 self.tasks[x]()
         self.canvas.repaint()
-
 
     def radioClick(self):
         for x in xrange(3):
@@ -300,7 +338,12 @@ class ControlMainWindow(QMainWindow):
         self.canvas.data = inputs
 
     def task4(self):
-        print 'task4!'
+        inputs = [self.ui.task4_x1,
+                  self.ui.task4_y1,
+                  self.ui.task4_x2,
+                  self.ui.task4_y2]
+        self.canvas.task = self.canvas.task4
+        self.canvas.data = (self.pointsTable.toList(), inputs)
 
 def main():
     """Program enter

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Sun Oct 27 05:30:55 2013
+# Created: Sun Oct 27 05:50:40 2013
 #      by: pyside-uic 0.2.14 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -80,7 +80,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
         self.verticalLayout.addWidget(self.frame_task2)
         self.radio_task3 = QtGui.QRadioButton(self.SettingsGroup)
-        self.radio_task3.setChecked(True)
+        self.radio_task3.setChecked(False)
         self.radio_task3.setObjectName("radio_task3")
         self.verticalLayout.addWidget(self.radio_task3)
         self.frame_task3 = QtGui.QFrame(self.SettingsGroup)
@@ -124,6 +124,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addLayout(self.horizontalLayout_7)
         self.verticalLayout.addWidget(self.frame_task3)
         self.radio_task4 = QtGui.QRadioButton(self.SettingsGroup)
+        self.radio_task4.setChecked(True)
         self.radio_task4.setObjectName("radio_task4")
         self.verticalLayout.addWidget(self.radio_task4)
         self.frame_task4 = QtGui.QFrame(self.SettingsGroup)
