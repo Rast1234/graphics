@@ -10,28 +10,14 @@ import sys
 import random
 from math import *
 from TupleTableWidget import TupleTableWidget
-from intersect import segmentIntersection
+from Clipping import *
+import GlobalQueue
 from window import *
 
 global hx
 global hy
 hx = None
 hy = None
-
-testPoly = [
-    (168, 190),
-    (221, 120),
-    (415, 128),
-    (454, 227),
-    (364, 470),
-    (171, 419),
-    (216, 300),
-    (322, 284),
-    (310, 338),
-    (380, 340),
-    (409, 178),
-]
-testRect = [202, 113, 338, 291]  # x1, y1, x2, y2
 
 def randomColor():
     #[r,g,b] = [random.randint(0,255/3)*3 for _ in range(3)]
@@ -65,47 +51,6 @@ def f(x, a, b):
         return None
     return int(sqrt(tmp)/a)
 
-class Queue(object):
-    """
-    Drawing queue
-    """
-
-    def __init__(self, data):
-        """
-        Initialize queue with segments
-        """
-        self.data = data
-        self.pos = 0
-        self.force = False
-        self.baseColor = qRgb(0, 0, 0)
-        self.updateColor = qRgb(255, 0, 0)
-
-    def draw(self, canvas):
-        for i, (p,(p1,p2),(p3,p4)) in enumerate(self.data[:self.pos]):
-            last = i == self.pos-1
-            #print("i={}, pos={}, last={}".format(i,self.pos, last))
-            color = self.updateColor if last else self.baseColor
-            if last:
-                print("{0} for {1}, {2} :: {3}, {4}".format(p,p1,p2,p3,p4))
-
-            self.__do_draw(canvas, p, p1, p2, p3, p4, color)
-
-    def __do_draw(self, canvas, p, p1, p2, p3, p4, color):
-        #print(">    ",p,p1,p2,p3,p4)
-        canvas.drawLine(p1,p2, color)
-        canvas.drawLine(p3,p4, color)
-        if p:
-            canvas.drawCross(p, color=qRgb(0, 0, 255))
-            pass
-
-    def next(self):
-        self.pos += 1
-
-    def isDone(self):
-        return self.pos >= len(self.data)
-
-
-queue = Queue([])
 
 class Point(object):
     def __init__(self, x, y):
@@ -138,10 +83,9 @@ class Canvas(QWidget):
         self.drawClear()
 
         #dirty
-        global queue
-        #print queue.data, queue.isDone()
-        if not queue.isDone() or queue.force:
-            queue.draw(self)
+        print GlobalQueue.queue.data, GlobalQueue.queue.isDone()
+        if not GlobalQueue.queue.isDone() or GlobalQueue.queue.force:
+            GlobalQueue.queue.draw(self)
             #=queue.next()
         elif self.task is not None:
             self.task()  # do useful stuff
@@ -327,8 +271,8 @@ class Canvas(QWidget):
         rect.draw(self.drawLine)
 
         print("="*60)
-        newPolyData = poly.extendWithIntersectionPoints(rect)
-        poly = Poly(newPolyData, poly.color)
+        #newPolyData = poly.extendWithIntersectionPoints(rect)
+        #poly = Poly(newPolyData, poly.color)
         newRectData = rect.extendWithIntersectionPoints(poly)
         rect = Poly(newRectData, rect.color)
 
@@ -336,65 +280,6 @@ class Canvas(QWidget):
         rect.drawPoints(self.drawSquare)
 
 
-class Poly(object):
-    """
-    Polygone with operations
-    """
-
-    def __init__(self, points, color=None):
-        self.points = points
-
-        if color is None:
-            self.color = randomColor()
-        else:
-            self.color = color
-
-        #normalize
-        if self.points[0] != self.points[-1]:
-            self.points.append(self.points[0])
-
-    def iterSegments(self):
-        """
-        Iterate over self segments
-        Segment is ((x1, y1), (x2, y2))
-        """
-        for i, _ in enumerate(self.points[:-1]):
-            yield self.points[i], self.points[i+1]
-
-    def draw(self, drawingFunc):
-        """
-        Draw self on canvas, given in constructor
-        """
-        for a, b in self.iterSegments():
-            drawingFunc(a, b, color=self.color)
-
-    def extendWithIntersectionPoints(self, otherPoly):
-        """
-        Update current points list,
-        extended with intersection points
-        """
-        debugResult = []
-        result = []
-        for seg in self.iterSegments():
-            for otherSeg in otherPoly.iterSegments():
-                intersection = segmentIntersection(seg, otherSeg)
-                result.append(seg[0])
-                if intersection:
-                    result.append(intersection)
-                result.append(seg[1])
-                #this is for debugging
-                debugResult.append((intersection, seg, otherSeg))
-                #print("{0} :: {1} :: {2}".format(intersection, seg, otherSeg))
-        #global queue
-        #queue = Queue(debugResult)
-        return result
-
-    def drawPoints(self, drawingFunc):
-        """
-        Draw points using callback
-        """
-        for p in self.points:
-            drawingFunc(p, color=self.color)
 
 class ControlMainWindow(QMainWindow):
     """A main window class
@@ -454,8 +339,7 @@ class ControlMainWindow(QMainWindow):
         for x in xrange(3):
             if self.radios[x].isChecked():
                 self.tasks[x]()
-        global queue
-        queue.force = False
+        GlobalQueue.queue.force = False
         self.canvas.repaint()
 
     def radioClick(self):
@@ -474,10 +358,9 @@ class ControlMainWindow(QMainWindow):
         if key == QtCore.Qt.Key_Escape:
             self.close()
         elif key == QtCore.Qt.Key_Equal:
-            global queue
-            if queue is not None and not queue.isDone():
-                queue.next()
-                queue.force = True
+            if GlobalQueue.queue is not None and not GlobalQueue.queue.isDone():
+                GlobalQueue.queue.next()
+                GlobalQueue.queue.force = True
                 self.canvas.repaint()
 
     def mousePressEvent(self, event):
