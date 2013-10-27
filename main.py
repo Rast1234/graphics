@@ -8,9 +8,9 @@ from PySide.QtGui import *
 import signal
 import sys
 import random
-import time
 from math import *
 from TupleTableWidget import TupleTableWidget
+from intersect import segmentIntersection
 from window import *
 
 global hx
@@ -69,39 +69,6 @@ def f(x, a, b):
         return None
     return int(sqrt(tmp)/a)
 
-def segmentIntersection(seg1, seg2):
-    """
-    seg1 = ( (x1, y1), (x2, y2) )
-    seg2 = ( (x3, y3), (x4, y5) )
-    returns False or (x, y) - intersection point
-    """
-    (p1, p2) = seg1
-    (p3, p4) = seg2
-    [p1, p2 ,p3, p4] = [Point(float(x), float(y)) for (x,y) in [p1, p2, p3, p4]]
-
-    if max(p1.x, p2.x) < min(p3.x, p4.x):
-        return False  # no mutual X intervals
-
-    try:
-        [a1, a2] = [(A.y-B.y)/(A.x-B.x) for (A,B) in [(p1, p2), (p3, p4)]]
-    except ZeroDivisionError:
-        #print("Zero division with segments {0} :: {1}".format(seg1, seg2))
-        # this means that some Xs are equals
-        return None
-    [b1, b2] = [A.y-a*A.x for (A,a) in [(p1,a1), (p3,a2)]]
-
-    if a1 == a2:
-        return False  # parallel segments
-
-    x = (b2 - b1)/(a1 - a2)
-    y = a1*x + b1
-
-    if x < max(min(p1.x, p2.x), min(p3.x, p4.x)) or \
-            x > min(max(p1.x, p2.x), max(p3.x, p4.x)):
-        return False
-
-    return x,y
-
 class Queue(object):
     """
     Drawing queue
@@ -132,7 +99,7 @@ class Queue(object):
         canvas.drawLine(p1,p2, color)
         canvas.drawLine(p3,p4, color)
         if p:
-            canvas.drawCircle(p)
+            canvas.drawCross(p, color=qRgb(0, 0, 255))
             pass
 
     def next(self):
@@ -260,7 +227,7 @@ class Canvas(QWidget):
                 y += pdy
             self.setPixel(x, y, color)
 
-    def drawCircle(self, centerPoint, color=None):
+    def drawCross(self, centerPoint, length=2, color=None):
         """
         Draws (bad) circle
         """
@@ -268,15 +235,12 @@ class Canvas(QWidget):
             color = randomColor()
         x = centerPoint[0]
         y = centerPoint[1]
-        points = [
-            (x,y),
-            (x+1,y+1),
-            (x+1,y-1),
-            (x-1,y+1),
-            (x-1,y-1),
+        segments = [
+            ( (x+length,y+length), (x-length,y-length) ),
+            ( (x-length,y+length), (x+length,y-length) )
         ]
-        for x,y in points:
-            self.setPixel(x, y, color)
+        for (p1, p2) in segments:
+            self.drawLine(p1, p2, color)
 
     def task3(self):
         """Task 3 wrapper
