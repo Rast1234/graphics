@@ -32,9 +32,9 @@ testPoly = [
     (409, 178),
 ]
 testRect = [202, 113, 338, 291]  # x1, y1, x2, y2
-colors = None
 
-def iterColor():
+def randomColor():
+    #[r,g,b] = [random.randint(0,255/3)*3 for _ in range(3)]
     colorSet = [
         (255, 0, 0),
         (0, 255, 0),
@@ -45,11 +45,7 @@ def iterColor():
         (255, 255, 255),
         (0, 0, 0),
     ]
-    for x in colorSet:
-        yield qRgb(*x)
-
-def randomColor():
-    [r,g,b] = [random.randint(0,255/3)*3 for _ in range(3)]
+    (r,g,b)= random.choice(colorSet)
     return qRgb(r, g, b)
 
 def sign(x):
@@ -227,7 +223,7 @@ class Canvas(QWidget):
                 y += pdy
             self.setPixel(x, y, color)
 
-    def drawCross(self, centerPoint, length=2, color=None):
+    def drawCross(self, centerPoint, length=3, color=None):
         """
         Draws (bad) circle
         """
@@ -238,6 +234,23 @@ class Canvas(QWidget):
         segments = [
             ( (x+length,y+length), (x-length,y-length) ),
             ( (x-length,y+length), (x+length,y-length) )
+        ]
+        for (p1, p2) in segments:
+            self.drawLine(p1, p2, color)
+
+    def drawSquare(self, centerPoint, size=3, color=None):
+        """
+        Draws square from center
+        """
+        if color is None:
+            color = randomColor()
+        x = centerPoint[0]
+        y = centerPoint[1]
+        segments = [
+            ( (x-size,y-size), (x+size,y-size) ),
+            ( (x+size,y-size), (x+size,y+size) ),
+            ( (x+size,y+size), (x-size,y+size) ),
+            ( (x-size,y+size), (x-size,y-size) ),
         ]
         for (p1, p2) in segments:
             self.drawLine(p1, p2, color)
@@ -304,20 +317,23 @@ class Canvas(QWidget):
     def task4(self):
         """Task 4 wrapper
         """
-        global colors
-        colors = iterColor()  # re-seed colors for repainting
-
         data = map(lambda x: int(x.value()), self.data[1])
         polyData = self.data[0]
-        poly = Poly(polyData, self)
-        poly.draw()
+        poly = Poly(polyData)
+        poly.draw(self.drawLine)
 
         rectData = [(data[0], data[1]),(data[2], data[1]),(data[2], data[3]),(data[0], data[3])]
-        rect = Poly(rectData, self)
-        rect.draw()
+        rect = Poly(rectData)
+        rect.draw(self.drawLine)
 
         print("="*60)
-        poly.extendWithIntersectionPoints(rect)
+        newPolyData = poly.extendWithIntersectionPoints(rect)
+        poly = Poly(newPolyData, poly.color)
+        newRectData = rect.extendWithIntersectionPoints(poly)
+        rect = Poly(newRectData, rect.color)
+
+        poly.drawPoints(self.drawCross)
+        rect.drawPoints(self.drawSquare)
 
 
 class Poly(object):
@@ -325,11 +341,13 @@ class Poly(object):
     Polygone with operations
     """
 
-    def __init__(self, points, canvas, color=None):
+    def __init__(self, points, color=None):
         self.points = points
-        self.canvas = canvas
 
-        self.color = color if color is not None else colors.next()
+        if color is None:
+            self.color = randomColor()
+        else:
+            self.color = color
 
         #normalize
         if self.points[0] != self.points[-1]:
@@ -343,33 +361,40 @@ class Poly(object):
         for i, _ in enumerate(self.points[:-1]):
             yield self.points[i], self.points[i+1]
 
-    def draw(self):
+    def draw(self, drawingFunc):
         """
         Draw self on canvas, given in constructor
         """
         for a, b in self.iterSegments():
-            self.canvas.drawLine(a, b, self.color)
+            drawingFunc(a, b, color=self.color)
 
     def extendWithIntersectionPoints(self, otherPoly):
         """
-        Return current points list,
+        Update current points list,
         extended with intersection points
         """
+        debugResult = []
         result = []
         for seg in self.iterSegments():
             for otherSeg in otherPoly.iterSegments():
                 intersection = segmentIntersection(seg, otherSeg)
-
-                #self.canvas.drawLine(seg[0], seg[1])
-                #self.canvas.drawLine(otherSeg[0], otherSeg[1])
-                # pause
-                result.append((intersection, seg, otherSeg))
+                result.append(seg[0])
+                if intersection:
+                    result.append(intersection)
+                result.append(seg[1])
+                #this is for debugging
+                debugResult.append((intersection, seg, otherSeg))
                 #print("{0} :: {1} :: {2}".format(intersection, seg, otherSeg))
-        global queue
-        queue = Queue(result)
+        #global queue
+        #queue = Queue(debugResult)
+        return result
 
-
-
+    def drawPoints(self, drawingFunc):
+        """
+        Draw points using callback
+        """
+        for p in self.points:
+            drawingFunc(p, color=self.color)
 
 class ControlMainWindow(QMainWindow):
     """A main window class
