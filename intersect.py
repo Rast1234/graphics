@@ -96,7 +96,7 @@ def __intersect(a, b, c, d):  # PTs
             }
         return  {'intersect':False, 'reason': "Two segments"}
 
-def segmentIntersection(((x1, y1), (x2, y2)), ((x3, y3), (x4, y4))):
+def segmentIntersection((((x1, y1), _), ((x2, y2), __)), (((x3, y3), ___), ((x4, y4), ____))):
     a = Pt(x1, y1)
     b = Pt(x2, y2)
     c = Pt(x3, y3)
@@ -108,5 +108,10 @@ def segmentIntersection(((x1, y1), (x2, y2)), ((x3, y3), (x4, y4))):
     elif result['segment']:
         return False, result
     else:
+
+        #ln = Line(c, d)
+        #if ln.dist(a) == 0 or ln.dist(b) == 0:
+        #    return False, {'intersect':False, 'reason': "Touch by end of segment"}
+
         point = result['point']
         return (int(round(point.x)), int(round(point.y))), result

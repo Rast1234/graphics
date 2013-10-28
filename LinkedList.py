@@ -37,6 +37,10 @@ class LinkedList(object):
     def __init__(self):
         self.first = None
 
+    def load(self, dataList):
+        for x in dataList:
+            self.append(x)
+
     def append(self, data):
         if self.first is None:
             self.first = Node(data=data)
@@ -47,10 +51,12 @@ class LinkedList(object):
             current.next = Node(data=data, prev=current)  # !!
 
     def __getitem__(self, index):
-        if index == 0:
-            return self.first
         if index < 0:
             index = len(self) + index
+        if index == 0:
+            if self.first is None:
+                raise IndexError("Index out of range: {}".format(index))
+            return self.first
 
         count = 0
         current = self.first
@@ -84,11 +90,3 @@ class LinkedList(object):
         while current is not None and current.hasNext():
             current = current.next
             yield current
-
-l = LinkedList()
-[l.append(x) for x in range(10)]
-print len(l)
-print l[3].data, l[4].data, l[5].data
-l[4].insertBefore('a')
-print len(l)
-print l[3].data, l[4].data, l[5].data

@@ -300,24 +300,27 @@ class Canvas(QWidget):
         """
         data = map(lambda x: int(x.value()), self.data[1])
         polyData = self.data[0]
-        poly = Poly(points=polyData)
+        kinds = [Kind.neutral]*len(polyData)
+        poly = Poly(points=zip(polyData, kinds))
         poly.draw(self.drawLine)
 
         rectData = [(data[0], data[1]),(data[2], data[1]),(data[2], data[3]),(data[0], data[3])]
-        rect = Poly(points=rectData)
+        kinds = [Kind.neutral]*len(rectData)
+        rect = Poly(points=zip(rectData, kinds))
         rect.draw(self.drawLine)
 
         print("="*60)
-        newPolyData, polyKinds = poly.extendWithIntersectionPoints(rect)
-        newPoly = Poly(points=newPolyData, kinds=polyKinds, color=poly.color)
-        newRectData, rectKinds = rect.extendWithIntersectionPoints(poly)
-        newRect = Poly(points=newRectData, kinds=rectKinds, color=rect.color)
+        #newPolyData, polyKinds = poly.extendWithIntersectionPoints(rect)
+        tmp1= poly.extendWithIntersectionPoints(rect)
+        newPoly = Poly(points=tmp1, color=poly.color)
+        tmp2 = rect.extendWithIntersectionPoints(poly)
+        newRect = Poly(points=tmp2, color=rect.color)
 
         newPoly.drawPoints(self.drawCross)
         pprint(newPoly.points)
         newRect.drawPoints(self.drawSquare)
         pprint(newRect.points)
-        endPoly = newPoly - newRect
+        #endPoly = newPoly - newRect
 
 
 class ControlMainWindow(QMainWindow):
