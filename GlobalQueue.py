@@ -26,10 +26,10 @@ class Queue(object):
                 #print("{0} for {1}, {2} :: {3}, {4}".format(p,p1,p2,p3,p4))
                 #print(info)
                 pass
-            self.__do_draw(canvas, p, p1, p2, p3, p4, k, color)
+            self.__do_draw(canvas, p, p1[0], p2[0], p3[0], p4[0], k, color)
 
     def __do_draw(self, canvas, p, p1, p2, p3, p4, k, color):
-        #print(">    ",p,p1,p2,p3,p4)
+        print(">    ",p,p1,p2,p3,p4)
         canvas.drawLine(p1,p2, color)
         canvas.drawLine(p3,p4, color)
         if p:

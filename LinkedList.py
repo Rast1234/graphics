@@ -60,7 +60,7 @@ class LinkedList(object):
 
         count = 0
         current = self.first
-        while count < index and current.hasNext():
+        while count < index and current.hasNext() and current.next is not self.first:  # fix for endless mode
             current = current.next
             count += 1
         if count == index:
@@ -70,18 +70,31 @@ class LinkedList(object):
     def toList(self):
         return map(lambda x: x.data, list(self))
 
+    def setEndless(self, infinite):
+        if infinite:
+            last = self[-1]
+            self.first.prev = last
+            last.next = self.first
+        else:
+            self.first.prev = None
+            self[-1].next = None
+    def isEndless(self):
+        return self.first.prev!=None and self[-1].next!=None
+
     def __len__(self):
         count = 0
         if self.first == None:
             return count
         current = self.first
         count += 1
-        while current.hasNext():
+        while current.hasNext() and current.next is not self.first:
             current = current.next
             count += 1
         return count
 
     def __str__(self):
+        if self.isEndless():
+            return "Infinite loop"
         return ", ".join(map(lambda x: str(x), list(self)))
 
     def __iter__(self):
@@ -90,3 +103,9 @@ class LinkedList(object):
         while current is not None and current.hasNext():
             current = current.next
             yield current
+
+'''
+l = LinkedList()
+l.load(range(10))
+l.setEndless(True)
+'''

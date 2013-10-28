@@ -111,6 +111,7 @@ def segmentIntersection((((x1, y1), _), ((x2, y2), __)), (((x3, y3), ___), ((x4,
 
         #ln = Line(c, d)
         #if ln.dist(a) == 0 or ln.dist(b) == 0:
+        #    print"Rejected touch: ({}, {}),({}, {})    ({}, {}),({}, {})".format(x1,y1,x2,y2,x3,y3,x4,y4)
         #    return False, {'intersect':False, 'reason': "Touch by end of segment"}
 
         point = result['point']
