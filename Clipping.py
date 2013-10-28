@@ -50,13 +50,6 @@ class Poly(object):
         for i, _ in enumerate(self.points[:-1]):
             yield self.points[i][0], self.points[i+1][0]
 
-    def draw(self, drawingFunc):
-        """
-        Draw self on canvas, given in constructor
-        """
-        for a, b in self.iterSegments():
-            drawingFunc(a, b, color=self.color)
-
     def extendWithIntersectionPoints(self, otherPoly):
         """
         Update current points list,
@@ -66,6 +59,7 @@ class Poly(object):
         result = []
         kinds = []
         first = True
+
         for seg in self.iterSegments():
             if first:
                 result.append(seg[0])
@@ -73,18 +67,32 @@ class Poly(object):
                 first = False
             for otherSeg in otherPoly.iterSegments():
                 intersection, info = segmentIntersection(seg, otherSeg)
+                kind = None
                 if intersection:
                     result.append(intersection)
                     kind = Kind.incoming if info['sign'] < 0 else Kind.outgoing
                     kinds.append(kind)
                     #print("{} : {}  x  {}".format(info['sign'], seg, otherSeg))
                 #this is for debugging
-                debugResult.append((intersection, seg, otherSeg))
+                debugResult.append((intersection, seg, otherSeg, kind))
                 #print("{0} :: {1} :: {2}".format(intersection, seg, otherSeg))
             result.append(seg[1])
             kinds.append(Kind.neutral)
-        #GlobalQueue.queue = GlobalQueue.Queue(debugResult)
+        GlobalQueue.queue = GlobalQueue.Queue(debugResult)
         return result, kinds
+
+    def __sub__(self, other):
+        """
+        Subtraction of polygons
+        """
+        sequence = []
+
+        # get raw points lists without duplication first-last
+        points = [dict([["point",p], ["kind",k], ["visited", False]]) for p, k in self.points[:-1]]
+        otherPoints = [dict([["point",p], ["kind",k], ["visited", False]]) for p, k in other.points[:-1]]
+
+
+
 
     def drawPoints(self, drawingFunc):
         """
@@ -92,3 +100,20 @@ class Poly(object):
         """
         for point, kind in self.points:
             drawingFunc(point, kind=kind, color=self.color)
+
+    def draw(self, drawingFunc):
+        """
+        Draw self on canvas, given in constructor
+        """
+        for a, b in self.iterSegments():
+            drawingFunc(a, b, color=self.color)
+
+    def __findFirstOutgoing(self):
+        """
+        Return position of first "outgoing" point
+        """
+        for i, (_, kind) in self.points:
+            if kind == Kind.outgoing:
+                return i
+        return None
+

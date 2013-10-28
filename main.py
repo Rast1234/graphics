@@ -317,7 +317,7 @@ class Canvas(QWidget):
         pprint(newPoly.points)
         newRect.drawPoints(self.drawSquare)
         pprint(newRect.points)
-
+        endPoly = newPoly - newRect
 
 
 class ControlMainWindow(QMainWindow):
