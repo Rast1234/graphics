@@ -7,18 +7,24 @@ class Queue(object):
     Drawing queue
     """
 
-    def __init__(self, data):
+    def __init__(self):
         """
         Initialize queue with segments
         """
-        self.data = data
+        self.data = []
         self.pos = 0
         self.force = False
         self.baseColor = qRgb(0, 0, 0)
         self.updateColor = qRgb(255, 0, 0)
 
+    def insert(self, data):
+        """
+        Append
+        """
+        self.data += data
+
     def draw(self, canvas):
-        for i, (p,(p1,p2),(p3,p4), k) in enumerate(self.data[:self.pos]):
+        for i, (p,((p1,qq),(p2,qqq)),((p3,qqq),(p4,qqqq)), k) in enumerate(self.data[:self.pos]):
             last = i == self.pos-1
             #print("i={}, pos={}, last={}".format(i,self.pos, last))
             color = self.updateColor if last else self.baseColor
@@ -42,4 +48,4 @@ class Queue(object):
     def isDone(self):
         return self.pos >= len(self.data)
 
-queue = Queue([])
+queue = Queue()

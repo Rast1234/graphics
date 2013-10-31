@@ -302,12 +302,12 @@ class Canvas(QWidget):
         polyData = self.data[0]
         kinds = [Kind.neutral]*len(polyData)
         poly = Poly(points=zip(polyData, kinds))
-        poly.draw(self.drawLine)
+        #poly.draw()
 
         rectData = [(data[0], data[1]),(data[2], data[1]),(data[2], data[3]),(data[0], data[3])]
         kinds = [Kind.neutral]*len(rectData)
         rect = Poly(points=zip(rectData, kinds))
-        rect.draw(self.drawLine)
+        #rect.draw()
 
         print("="*60)
         #newPolyData, polyKinds = poly.extendWithIntersectionPoints(rect)
@@ -317,11 +317,15 @@ class Canvas(QWidget):
         newRect = Poly(points=tmp2, color=rect.color)
 
         newPoly.drawPoints(self.drawCross)
-        pprint(newPoly.points)
+        #pprint(newPoly.points)
         newRect.drawPoints(self.drawSquare)
-        pprint(newRect.points)
-        #endPoly = newPoly - newRect
+        #pprint(newRect.points)
+        endPoly = newPoly - newRect
 
+        newPoly.draw()
+        newRect.draw()
+        for p in endPoly:
+            p.draw()
 
 class ControlMainWindow(QMainWindow):
     """A main window class
@@ -381,6 +385,7 @@ class ControlMainWindow(QMainWindow):
         for x in xrange(3):
             if self.radios[x].isChecked():
                 self.tasks[x]()
+        GlobalQueue.queue = GlobalQueue.Queue()
         GlobalQueue.queue.force = False
         self.canvas.repaint()
 
