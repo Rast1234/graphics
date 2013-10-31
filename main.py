@@ -23,11 +23,11 @@ hy = None
 def randomColor():
     #[r,g,b] = [random.randint(0,255/3)*3 for _ in range(3)]
     colorSet = [
-        (255, 0, 0),
+        (255, 255, 0),
         (0, 255, 0),
         (0, 0, 255),
-        (255, 255, 0),
         (255, 0, 255),
+        (255, 0, 0),
         (0, 255, 255),
         (255, 255, 255),
         (0, 0, 0),
@@ -326,6 +326,7 @@ class Canvas(QWidget):
         newRect.draw()
         for p in endPoly:
             p.draw()
+        GlobalQueue.queue.finalize()
 
 class ControlMainWindow(QMainWindow):
     """A main window class

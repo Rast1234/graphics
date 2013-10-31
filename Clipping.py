@@ -7,7 +7,7 @@ from main import randomColor
 import GlobalQueue
 from pprint import pprint
 
-testPoly = [
+testPoly = [  # G ->
     (168, 190),
     (221, 120),
     (415, 128),
@@ -20,9 +20,9 @@ testPoly = [
     (380, 340),
     (409, 178),
 ]
-testRect = [202, 113, 338, 291]  # x1, y1, x2, y2
+testRect = [202, 113, 338, 291]  # x1, y1, x2, y2  # [] ->
 
-testPoly_ = [(11, 132),
+testPoly = [(11, 132),  # E
              (390, 134),
              (387, 174),
              (44, 178),
@@ -36,7 +36,7 @@ testPoly_ = [(11, 132),
              (14, 274)
         ]
 
-testPoly_ = [(108, 190),
+testPoly_ = [(108, 190),  # G
             (161, 120),
             (355, 128),
             (394, 227),
@@ -48,7 +48,7 @@ testPoly_ = [(108, 190),
             (320, 340),
             (349, 178)
         ]
-testRect = [142, 100, 278, 300]  # x1, y1, x2, y2
+testRect = [142, 100, 278, 300]  # x1, y1, x2, y2  # []
 
 
 class BravePoint(object):
@@ -146,7 +146,7 @@ class Poly(object):
 
             result.append(node.data)
 
-        #GlobalQueue.queue.insert(debugResult)
+        GlobalQueue.queue.insert(debugResult)
 
         return filterDuplicates(result)
 
@@ -193,7 +193,7 @@ class Poly(object):
 
         points.setEndless(False)
         otherPoints.setEndless(False)
-        pprint({'points': points.toList(), 'otherPoints': otherPoints.toList()})
+        #pprint({'points': points.toList(), 'otherPoints': otherPoints.toList()})
 
         result = []
         for lol in sequence:
@@ -222,7 +222,7 @@ class Poly(object):
             lol.append( (a, ((a,None),(b,None)), ((a,None),(b,None)), Kind.neutral) )
             #print "a,b = ",a,b
             #drawingFunc(a, b, color=self.color)
-        GlobalQueue.queue.insert(lol)
+        GlobalQueue.queue.insert(lol, color=self.color)
 
     def __findFirstOutgoing(self):
         """
